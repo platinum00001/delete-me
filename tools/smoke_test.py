@@ -1,0 +1,50 @@
+"""Headless smoke test: python tools/smoke_test.py <url>. Uses fake test data only."""
+import sys, json
+from playwright.sync_api import sync_playwright
+url = sys.argv[1]
+errs, reqs = [], []
+with sync_playwright() as p:
+    br = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--no-sandbox"])
+    ctx = br.new_context(viewport={"width": 1280, "height": 900})
+    ctx.grant_permissions(["clipboard-read", "clipboard-write"])
+    pg = ctx.new_page()
+    pg.on("console", lambda m: m.type == "error" and errs.append(m.text))
+    pg.on("pageerror", lambda e: errs.append(str(e)))
+    pg.on("request", lambda r: reqs.append(r.url))
+    pg.goto(url); pg.wait_for_selector(".broker")
+    print("title:", pg.title(), "| brokers:", pg.locator(".broker").count())
+    pg.screenshot(path="/tmp/dm-desktop.png", full_page=False)
+    pg.click("text=Your info")
+    pg.fill("[name=full_name]", "Test Person"); pg.fill("[name=emails]", "test@example.com")
+    pg.fill("[name=phones]", "555-555-0100"); pg.fill("[name=addresses]", "1 Example St, Springfield, MA")
+    pg.click("#profile-form button[type=submit]")
+    print("saved:", pg.text_content("#save-msg"))
+    print("localStorage profile:", pg.evaluate("localStorage.getItem('dm.profile.v1')"))
+    pg.reload(); pg.click("text=Your info"); print("persisted name:", pg.input_value("[name=full_name]"))
+    pg.click("#tabs >> text=Dashboard")
+    pg.on("dialog", lambda d: (print("dialog:", d.message[:80]), d.accept()))
+    with ctx.expect_page() as newp:
+        pg.click("#btn-delete-all")
+    np = newp.value
+    print("first tab opened:", np.url[:60] if np.url != "about:blank" else "(pending) about:blank"); np.close()
+    print("wizard:", pg.text_content("#wz-count"), "-", pg.text_content("#wz-title"))
+    print("clipboard:", pg.evaluate("navigator.clipboard.readText()").replace("\n", " / "))
+    pg.click("#wz-submitted"); pg.click("#wz-confirmed")
+    for _ in range(3): pg.click("#wz-skip")
+    print("now at:", pg.text_content("#wz-count"))
+    pg.click("#wz-close")
+    print("progress:", pg.text_content("#progress-text"))
+    print("stats:", pg.text_content("#stats"))
+    with pg.expect_download() as dl: pg.click("#btn-ics")
+    ics = open(dl.value.path()).read(); print("ics ok:", "RRULE:FREQ=WEEKLY;BYDAY=MO" in ics and "T090000" in ics)
+    pg.click("text=Your info")
+    with pg.expect_download() as dl: pg.click("#btn-export")
+    print("export keys:", list(json.load(open(dl.value.path())).keys()))
+    pg.click("#btn-clear"); print("after clear:", pg.evaluate("localStorage.length"))
+    m = ctx.new_page(); m.set_viewport_size({"width": 390, "height": 844}); m.goto(url); m.wait_for_selector(".broker")
+    print("mobile scrollWidth:", m.evaluate("document.documentElement.scrollWidth"))
+    m.screenshot(path="/tmp/dm-mobile.png", full_page=False)
+    br.close()
+host = url.split("/")[2]
+print("external requests:", sorted({r for r in reqs if host not in r and not r.startswith("data:")}) )
+print("errors:", errs)

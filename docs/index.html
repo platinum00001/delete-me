@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Delete Me — free data broker opt-out helper</title>
+<meta name="description" content="Remove yourself from people-search sites and data brokers. Free, private, runs entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%B9%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand">🧹 Delete Me</div>
+    <nav id="tabs">
+      <button data-tab="dash" class="active">Dashboard</button>
+      <button data-tab="info">Your info</button>
+      <button data-tab="about">How it works</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="privacy-banner">🔒 Everything you type stays in <strong>this browser only</strong> (localStorage). No server, no accounts, no analytics, no trackers.</div>
+
+  <!-- DASHBOARD -->
+  <section id="tab-dash" class="tab active">
+    <div class="hero card">
+      <div>
+        <h1>Remove yourself from data brokers</h1>
+        <p class="muted" id="hero-sub">Fill in <a href="#" data-goto="info">your info</a>, then press Delete all to walk through every opt-out in one go.</p>
+      </div>
+      <div class="hero-actions">
+        <button id="btn-delete-all" class="btn big danger">Delete all</button>
+        <button id="btn-ics" class="btn ghost">📅 Weekly re-check reminder (.ics)</button>
+      </div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+    <div class="progress"><div id="progress-bar"></div></div>
+    <p class="muted small" id="progress-text"></p>
+
+    <div class="toolbar">
+      <input id="filter" type="search" placeholder="Filter brokers…" aria-label="Filter brokers">
+      <select id="filter-status" aria-label="Filter by status">
+        <option value="">All statuses</option>
+        <option value="not_started">Not started</option>
+        <option value="opened">Opened</option>
+        <option value="submitted">Submitted</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="due">Re-check due</option>
+      </select>
+    </div>
+    <div id="broker-list" class="list"></div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="tab-info" class="tab">
+    <div class="card">
+      <h2>Your info</h2>
+      <p class="muted small">Only enter <strong>your own</strong> details. Saved in this browser only; used to fill request emails and copied to your clipboard while you fill each opt-out form. One item per line.</p>
+      <form id="profile-form" autocomplete="off">
+        <label>Full name<input name="full_name" type="text" placeholder="Jane Q. Public"></label>
+        <label>Aliases / previous names<textarea name="aliases" rows="2" placeholder="Jane Smith"></textarea></label>
+        <label>Email addresses<textarea name="emails" rows="2" placeholder="jane@example.com"></textarea></label>
+        <label>Phone numbers<textarea name="phones" rows="2" placeholder="555-555-0100"></textarea></label>
+        <label>Addresses (current &amp; past)<textarea name="addresses" rows="3" placeholder="123 Main St, Springfield, MA 01101"></textarea></label>
+        <label>Usernames / handles<textarea name="usernames" rows="2" placeholder="janeq"></textarea></label>
+        <label>Date of birth (optional — some brokers ask)<input name="dob" type="text" placeholder="MM/DD/YYYY"></label>
+        <div class="row">
+          <button type="submit" class="btn primary">Save</button>
+          <span id="save-msg" class="muted small"></span>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Backup &amp; privacy</h2>
+      <p class="muted small">Export a JSON backup (profile + progress) to move to another device. Keep the file private.</p>
+      <div class="row wrap-row">
+        <button id="btn-export" class="btn">Export JSON</button>
+        <label class="btn file-btn">Import JSON<input id="file-import" type="file" accept="application/json,.json" hidden></label>
+        <button id="btn-clear" class="btn danger-ghost">Clear my data</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="tab-about" class="tab">
+    <div class="card prose">
+      <h2>How it works</h2>
+      <ol>
+        <li><strong>Your info</strong> — enter your name, emails, phones, addresses. Stored only in your browser.</li>
+        <li><strong>Delete all</strong> — a guided walk-through of every enabled broker that isn't confirmed yet. Each step copies your details to the clipboard and opens the broker's official opt-out page (or a prefilled email where the broker takes email requests).</li>
+        <li><strong>Track it</strong> — mark each one Submitted, then Confirmed once you click the broker's verification email. A re-check date is set automatically (30 days after submitting, 90 days after confirming).</li>
+        <li><strong>Re-check weekly</strong> — brokers re-list people all the time. Download the weekly Monday 9 AM calendar reminder and come back here; anything due shows up as "Re-check due".</li>
+      </ol>
+      <h3>What it doesn't do</h3>
+      <ul>
+        <li>It can't submit forms on other websites for you — browsers don't allow that, and most brokers require a captcha or email verification you must complete yourself.</li>
+        <li>It never sends your info anywhere. There is no backend. Opt-out pages open with no referrer.</li>
+        <li>Opt-out links change; if one is broken, search the broker's site for "opt out" or "do not sell".</li>
+      </ul>
+      <p class="muted small">Use only for your own information. Not legal advice. Open source — see the GitHub repo.</p>
+    </div>
+  </section>
+</main>
+
+<!-- WIZARD -->
+<div id="wizard" class="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="wz-title">
+    <div class="wz-head">
+      <span id="wz-count" class="muted small"></span>
+      <button id="wz-close" class="x" aria-label="Close">✕</button>
+    </div>
+    <h2 id="wz-title"></h2>
+    <p id="wz-meta" class="muted small"></p>
+    <p id="wz-notes"></p>
+    <div class="wz-actions">
+      <button id="wz-open" class="btn primary big"></button>
+      <button id="wz-email" class="btn">✉️ Email request instead</button>
+    </div>
+    <details class="wz-details">
+      <summary>Your details (copied to clipboard)</summary>
+      <pre id="wz-copy"></pre>
+      <button id="wz-recopy" class="btn small-btn">Copy again</button>
+    </details>
+    <div class="wz-foot">
+      <button id="wz-skip" class="btn ghost">Skip</button>
+      <button id="wz-submitted" class="btn">✔ Submitted → next</button>
+      <button id="wz-confirmed" class="btn ok">✔✔ Confirmed → next</button>
+    </div>
+    <p id="wz-toast" class="toast" aria-live="polite"></p>
+  </div>
+</div>
+
+<footer class="wrap muted small foot">Delete Me · free &amp; open source · no data leaves your device</footer>
+<script src="catalog.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

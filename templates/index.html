@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <h1>Clean up your public listings</h1>
+    {% if profile_empty %}
+    <p class="empty-state">Add your info, then hit <strong>Delete all</strong>.</p>
+    <p><a class="btn secondary" href="/profile">Add your info</a></p>
+    {% else %}
+    <p class="lede">
+      Profile: <strong>{{ profile.full_name }}</strong>
+      · {{ enabled_count }} enabled targets
+      · {{ incomplete_count }} still incomplete
+    </p>
+    {% endif %}
+  </div>
+  <div class="hero-actions">
+    <button type="button" id="btn-delete-all" class="btn primary big" {% if profile_empty %}disabled title="Add your info first"{% endif %}>
+      Delete all
+    </button>
+    <p class="hint">Opens / queues every enabled incomplete opt-out in one go.</p>
+  </div>
+</section>
+
+<div id="progress" class="progress hidden" aria-live="polite"></div>
+
+<section class="card">
+  <div class="card-head">
+    <h2>Targets</h2>
+    <div class="filters">
+      <label><input type="checkbox" id="filter-enabled" checked /> Enabled only</label>
+      <label><input type="checkbox" id="filter-incomplete" /> Incomplete only</label>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="targets" id="targets-table">
+      <thead>
+        <tr>
+          <th>On</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Method</th>
+          <th>Status</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in targets %}
+        <tr data-id="{{ t.id }}" data-enabled="{{ '1' if t.enabled else '0' }}" data-status="{{ t.status }}" data-method="{{ t.method }}" data-url="{{ t.opt_out_url }}">
+          <td>
+            <input type="checkbox" class="toggle-enabled" data-id="{{ t.id }}" {% if t.enabled %}checked{% endif %} aria-label="Enable {{ t.name }}" />
+          </td>
+          <td>
+            <strong>{{ t.name }}</strong>
+          </td>
+          <td><span class="pill">{{ t.category }}</span></td>
+          <td>{{ t.method.replace('_', ' ') }}</td>
+          <td>
+            <select class="status-select" data-id="{{ t.id }}" aria-label="Status for {{ t.name }}">
+              {% for s in statuses %}
+              <option value="{{ s }}" {% if t.status == s %}selected{% endif %}>{{ s.replace('_', ' ') }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td class="notes">{{ t.notes }}</td>
+          <td class="actions">
+            <button type="button" class="btn tiny open-btn" data-id="{{ t.id }}">Open</button>
+            <button type="button" class="btn tiny mark-done" data-id="{{ t.id }}">Mark done</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<dialog id="email-dialog">
+  <form method="dialog" class="email-box">
+    <h3 id="email-title">Email template</h3>
+    <textarea id="email-body" rows="14" readonly></textarea>
+    <div class="dialog-actions">
+      <a id="email-mailto" class="btn primary" href="#">Open mail app</a>
+      <button type="button" class="btn secondary" id="copy-email">Copy</button>
+      <button value="cancel" class="btn ghost">Close</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

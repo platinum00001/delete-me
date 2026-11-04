@@ -1,0 +1,18 @@
+# Personal data — never commit
+data/profile.json
+data/status.db
+data/*.db
+data/*.db-*
+data/*.log
+data/*.bak
+*.backup.json
+delete-me-backup-*.json
+.env
+.env.*
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+# OS
+.DS_Store

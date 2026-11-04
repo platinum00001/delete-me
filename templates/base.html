@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Delete Me{% endblock %} — Info Cleanup</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <a href="/" class="logo">Delete Me</a>
+        <span class="tag">Info Cleanup · local only</span>
+      </div>
+      <nav>
+        <a href="/" {% if request.url.path == '/' %}class="active"{% endif %}>Dashboard</a>
+        <a href="/profile" {% if request.url.path == '/profile' %}class="active"{% endif %}>Your info</a>
+        <a href="/history" {% if request.url.path == '/history' %}class="active"{% endif %}>Run history</a>
+      </nav>
+    </header>
+
+    <aside class="disclaimer">
+      <strong>Heads up:</strong> This app helps <em>you</em> opt out of data brokers for your own information.
+      Many sites still need email verification or a manual step. We open the right links and track status —
+      we do <strong>not</strong> log into accounts, bypass CAPTCHAs, or guarantee instant erasure.
+      Bound to <code>127.0.0.1</code> only; data stays on this machine.
+    </aside>
+
+    {% block content %}{% endblock %}
+
+    <footer class="foot">
+      Delete Me · for your own data only · edit catalog at <code>data/catalog.json</code>
+    </footer>
+  </div>
+  <script src="/static/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

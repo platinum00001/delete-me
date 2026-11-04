@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Your info{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Your info</h1>
+  <p class="lede">Saved only on this computer under <code>data/profile.json</code>. Used to fill opt-out forms and email templates.</p>
+  <form method="post" action="/profile" class="form">
+    <label>
+      Full name
+      <input name="full_name" value="{{ profile.full_name }}" required placeholder="Jane Q. Public" />
+    </label>
+    <label>
+      Aliases / previous names
+      <textarea name="aliases" rows="2" placeholder="One per line">{% for a in profile.aliases %}{{ a }}
+{% endfor %}</textarea>
+    </label>
+    <label>
+      Emails
+      <textarea name="emails" rows="2" placeholder="One per line">{% for e in profile.emails %}{{ e }}
+{% endfor %}</textarea>
+    </label>
+    <label>
+      Phones
+      <textarea name="phones" rows="2" placeholder="One per line">{% for ph in profile.phones %}{{ ph }}
+{% endfor %}</textarea>
+    </label>
+    <label>
+      Addresses
+      <textarea name="addresses" rows="3" placeholder="One per line">{% for ad in profile.addresses %}{{ ad }}
+{% endfor %}</textarea>
+    </label>
+    <label>
+      Usernames
+      <textarea name="usernames" rows="2" placeholder="One per line">{% for u in profile.usernames %}{{ u }}
+{% endfor %}</textarea>
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn primary">Save</button>
+      <a href="/" class="btn ghost">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
